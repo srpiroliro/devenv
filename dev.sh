@@ -12,7 +12,7 @@ get_script_dir() {
   dirname "$(readlink -f "$SOURCE")"
 }
 
-script_dir="$(get_script_dir)"
+script_dir="$(get_script_dir)/helpers"
 
 DC="docker compose -f docker-compose.dev.yml"
 
