@@ -37,7 +37,21 @@ prpull()    { pr db pull; }
 prmigrate() { pr migrate dev; }
 prmstat()   { pr migrate status; }
 
-install()   { ensure_required_files; $DC run --rm app pnpm install "$@"; }
+install() {
+  ensure_required_files
+  
+  # Install locally with --ignore-scripts
+  if command -v pnpm >/dev/null 2>&1; then
+    echo "Installing locally with --ignore-scripts..."
+    pnpm install "$@" --ignore-scripts
+  else
+    echo "Warning: pnpm not found locally, skipping local install"
+  fi
+  
+  # Install in container normally
+  echo "Installing in container..."
+  $DC run --rm app pnpm install "$@"
+}
 
 shell() {
   ensure_required_files
@@ -60,6 +74,11 @@ run() {
   $DC run --rm app pnpm run "$@"
 }
 
+build() {
+  ensure_required_files
+  $DC run --rm app pnpm run build
+}
+
 start() {
   ensure_required_files
   $DC up -d
@@ -73,6 +92,17 @@ stop() {
 logs() {
   ensure_required_files
   $DC logs -f "$@"
+}
+
+status() {
+  ensure_required_files
+  $DC ps
+}
+
+quit() {
+  ensure_required_files
+  $DC down
+  exit 0
 }
 
 handle_dockerignore() {
@@ -95,6 +125,28 @@ handle_dockerignore() {
   fi
 }
 
+handle_gitignore() {
+  target=".gitignore"
+  files_to_add=("Dockerfile.dev" "docker-compose.dev.yml")
+  
+  # Add .dockerignore only if it doesn't already exist in the target directory
+  if [ ! -f ".dockerignore" ]; then
+    files_to_add+=(".dockerignore")
+  fi
+
+  if [ ! -f "$target" ]; then
+    for file in "${files_to_add[@]}"; do
+      echo "$file" >> "$target"
+    done
+    echo "Created .gitignore with dev environment files"
+  else
+    for file in "${files_to_add[@]}"; do
+      grep -Fxq "$file" "$target" || echo "$file" >> "$target"
+    done
+    echo "Added missing dev environment files to .gitignore"
+  fi
+}
+
 # New: initialize project with dev environment
 init() {
   for file in Dockerfile.dev .dockerignore docker-compose.dev.yml; do
@@ -102,6 +154,7 @@ init() {
   done
 
   handle_dockerignore
+  handle_gitignore
 
   echo "✅ Dev environment files initialized in $(pwd)"
   exit 0
@@ -118,13 +171,15 @@ Container Management:
   init         — Copy dev environment files into current directory
   start        — Start the dev server containers in detached mode
   stop         — Stop and remove the dev server containers
+  status       — Show status of running containers
   logs [svc]   — View and follow container logs (optionally for specific service)
   shell        — Open interactive shell inside container
+  quit         — Stop containers and exit
 
 Package Management:
-  install      — Install packages inside container (runs pnpm install)
-  add <pkg>    — Add pkg(s) to package.json & lockfile, then install
-  run <script> — Execute npm/pnpm script from package.json
+  install [pkg] — Install packages locally (with --ignore-scripts) and in container
+  add <pkg>     — Add pkg(s) to package.json & lockfile, then install
+  run <script>  — Execute npm/pnpm script from package.json
 
 Database (Prisma):
   pr <cmd>     — Run any Prisma CLI command
@@ -138,6 +193,9 @@ Database (Prisma):
 Examples:
   dev init                                    # Initialize dev environment
   dev start                                   # Start containers
+  dev status                                  # Check container status
+  dev install                                 # Install all packages locally and in container
+  dev install lodash                          # Install specific package locally and in container
   dev logs                                    # View all logs
   dev logs app                                # View app container logs only
   dev run build                               # Run build script
@@ -145,6 +203,7 @@ Examples:
   dev add @rainbow‑me/rainbowkit wagmi viem    # Add packages
   dev pr migrate reset                        # Run custom Prisma command
   dev shell                                   # Open interactive shell
+  dev quit                                    # Stop containers and exit
 
 All commands run inside Docker containers and require package.json in your project.
 EOF
