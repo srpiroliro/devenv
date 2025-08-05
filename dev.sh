@@ -39,7 +39,7 @@ prmstat()   { pr migrate status; }
 
 install() {
   ensure_required_files
-  
+
   # Install locally with --ignore-scripts
   if command -v pnpm >/dev/null 2>&1; then
     echo "Installing locally with --ignore-scripts..."
@@ -47,7 +47,7 @@ install() {
   else
     echo "Warning: pnpm not found locally, skipping local install"
   fi
-  
+
   # Install in container normally
   echo "Installing in container..."
   $DC run --rm app pnpm install "$@"
@@ -127,8 +127,8 @@ handle_dockerignore() {
 
 handle_gitignore() {
   target=".gitignore"
-  files_to_add=("Dockerfile.dev" "docker-compose.dev.yml")
-  
+  files_to_add=("Dockerfile.dev" "docker-compose.dev.yml" ".pnpm-store")
+
   # Add .dockerignore only if it doesn't already exist in the target directory
   if [ ! -f ".dockerignore" ]; then
     files_to_add+=(".dockerignore")
