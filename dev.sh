@@ -23,7 +23,7 @@ _err_missing() {
 
 ensure_required_files() {
   [[ -f "docker-compose.dev.yml" ]] || _err_missing "docker-compose.dev.yml"
-  [[ -f "Dockerfile.dev" ]]         || _err_missing "Dockerfile.dev"
+  [[ -f "dev.Dockerfile" ]]         || _err_missing "dev.Dockerfile"
   [[ -f ".dockerignore" ]]          || _err_missing ".dockerignore"
 }
 
@@ -127,7 +127,7 @@ handle_dockerignore() {
 
 handle_gitignore() {
   target=".gitignore"
-  files_to_add=("Dockerfile.dev" "docker-compose.dev.yml" ".pnpm-store")
+  files_to_add=("dev.Dockerfile" "docker-compose.dev.yml" ".pnpm-store")
 
   # Add .dockerignore only if it doesn't already exist in the target directory
   if [ ! -f ".dockerignore" ]; then
@@ -149,7 +149,7 @@ handle_gitignore() {
 
 # New: initialize project with dev environment
 init() {
-  for file in Dockerfile.dev .dockerignore docker-compose.dev.yml; do
+  for file in dev.Dockerfile .dockerignore docker-compose.dev.yml; do
     cp "$script_dir/$file" "./$file"
   done
 
