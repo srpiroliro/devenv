@@ -2,5 +2,5 @@ node_modules
 **/node_modules
 *.log
 .git
-Dockerfile*
-docker-compose*.yml
+dev.Dockerfile
+docker-compose.dev.yml

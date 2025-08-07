@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: dev.Dockerfile
     ports:
       - "3000:3000"
       - "4200:4200"

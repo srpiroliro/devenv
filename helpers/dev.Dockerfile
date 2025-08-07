@@ -1,8 +1,7 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-RUN apk update && \
-    apk add --no-cache openssl1.1-compat libc6-compat
+RUN apk update && apk add --no-cache openssl libc6-compat
 
 # Ensure pnpm available
 RUN npm install -g pnpm@latest

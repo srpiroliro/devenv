@@ -81,7 +81,7 @@ build() {
 
 start() {
   ensure_required_files
-  $DC up -d
+  $DC up -d --build
 }
 
 stop() {
