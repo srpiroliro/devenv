@@ -14,6 +14,10 @@ get_script_dir() {
 
 script_dir="$(get_script_dir)/helpers"
 
+# Export USER_ID and GROUP_ID for docker-compose to use
+export USER_ID=$(id -u)
+export GROUP_ID=$(id -g)
+
 DC="docker compose -f docker-compose.dev.yml"
 
 _err_missing() {
